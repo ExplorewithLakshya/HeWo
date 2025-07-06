@@ -1,261 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>HeWo Chat App</title>
-  <style>
-    /* Dark theme */
-    body {
-      background: #121212;
-      color: #eee;
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-    }
-    header {
-      padding: 1rem;
-      text-align: center;
-      background: #1f1f1f;
-      font-size: 1.5rem;
-      font-weight: bold;
-    }
-    #login-form, #chat-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-    }
-    #chat-section {
-      display: none;
-      height: 100%;
-      max-width: 600px;
-      margin: auto;
-      width: 100%;
-    }
-    input, button {
-      padding: 0.5rem;
-      font-size: 1rem;
-      margin: 0.3rem 0;
-      border-radius: 4px;
-      border: none;
-    }
-    input {
-      width: 100%;
-      max-width: 300px;
-    }
-    button {
-      cursor: pointer;
-      background-color: #4caf50;
-      color: white;
-      width: 100%;
-      max-width: 300px;
-    }
-    #messages {
-      background: #222;
-      flex: 1;
-      width: 100%;
-      max-width: 600px;
-      overflow-y: auto;
-      padding: 1rem;
-      border-radius: 5px;
-      margin-bottom: 1rem;
-    }
-    .message {
-      margin-bottom: 0.5rem;
-      padding: 0.5rem;
-      border-radius: 5px;
-      background: #333;
-    }
-    .message strong {
-      color: #8ab4f8;
-    }
-    form {
-      width: 100%;
-      max-width: 600px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    @media (max-width: 600px) {
-      #messages {
-        max-width: 100%;
-      }
-      input, button, form {
-        max-width: 100%;
-      }
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hewo Chat App</title>
+<style>
+  body {
+    margin: 0; padding: 0; font-family: Arial, sans-serif;
+    background: #121212; color: #eee;
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  #loginForm, #chatSection {
+    max-width: 400px; margin: auto; padding: 20px;
+    border-radius: 8px; background: #222; box-shadow: 0 0 10px #000;
+  }
+  #chatSection { display: none; flex-direction: column; height: 80vh; }
+  input, button {
+    width: 100%; padding: 10px; margin: 8px 0; border-radius: 4px; border: none;
+  }
+  input {
+    background: #333; color: #eee;
+  }
+  button {
+    background: #4caf50; color: white; font-weight: bold;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #45a049;
+  }
+  #messages {
+    flex-grow: 1;
+    background: #1e1e1e;
+    padding: 10px;
+    border-radius: 8px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+  }
+  .message {
+    margin-bottom: 8px;
+  }
+  .message strong {
+    color: #81d4fa;
+  }
+  #logoutBtn {
+    background: #e53935;
+    margin-top: 10px;
+  }
+</style>
 </head>
 <body>
-  <header>HeWo Chat App</header>
 
-  <section id="login-form">
-    <input type="email" id="email" placeholder="Email" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button id="login-btn">Login</button>
-    <button id="signup-btn">Sign Up</button>
-    <p id="login-error" style="color:#ff5555;"></p>
-  </section>
+<div id="loginForm">
+  <h2>Login or Sign Up</h2>
+  <input type="email" id="emailInput" placeholder="Email" />
+  <input type="password" id="passwordInput" placeholder="Password" />
+  <button id="loginBtn">Login</button>
+  <button id="signupBtn">Sign Up</button>
+  <div id="loginError" style="color: #e53935; margin-top: 10px;"></div>
+</div>
 
-  <section id="chat-section">
-    <div id="messages"></div>
-    <form id="message-form">
-      <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off" required />
-      <button type="submit">Send</button>
-    </form>
-    <button id="logout-btn" style="margin-top:10px; background:#d32f2f;">Logout</button>
-  </section>
+<div id="chatSection">
+  <h2>Hewo Chat</h2>
+  <div id="messages"></div>
+  <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" />
+  <button id="sendBtn">Send</button>
+  <button id="logoutBtn">Logout</button>
+</div>
 
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    import {
-      getAuth,
-      createUserWithEmailAndPassword,
-      signInWithEmailAndPassword,
-      signOut,
-      onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
-    import {
-      getDatabase,
-      ref,
-      push,
-      onValue,
-      set
-    } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+<!-- Firebase SDK -->
+<script type="module">
+// Import Firebase modules
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.1/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.6.1/firebase-auth.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue,
+  serverTimestamp,
+  query,
+  orderByChild,
+  limitToLast
+} from "https://www.gstatic.com/firebasejs/10.6.1/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyA7PHBO8ridZ_s8OqN-KpidOZR60yot96M",
-      authDomain: "hewo-chat-app.firebaseapp.com",
-      databaseURL: "https://hewo-chat-app-default-rtdb.firebaseio.com",
-      projectId: "hewo-chat-app",
-      storageBucket: "hewo-chat-app.appspot.com",
-      messagingSenderId: "747697697501",
-      appId: "1:747697697501:web:4b3fda4b9a271d84e4a134"
-    };
+// Your Firebase config with your databaseURL
+const firebaseConfig = {
+  apiKey: "AIzaSyA7PHBO8ridZ_s8OqN-KpidOZR60yot96M",
+  authDomain: "hewo-chat-app.firebaseapp.com",
+  databaseURL: "https://hewo-chat-app-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "hewo-chat-app",
+  storageBucket: "hewo-chat-app.appspot.com",
+  messagingSenderId: "747697697501",
+  appId: "1:747697697501:web:4b3fda4b9a271d84e4a134"
+};
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-    // DOM Elements
-    const loginForm = document.getElementById("login-form");
-    const chatSection = document.getElementById("chat-section");
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-    const loginBtn = document.getElementById("login-btn");
-    const signupBtn = document.getElementById("signup-btn");
-    const loginError = document.getElementById("login-error");
-    const messagesDiv = document.getElementById("messages");
-    const messageForm = document.getElementById("message-form");
-    const messageInput = document.getElementById("message-input");
-    const logoutBtn = document.getElementById("logout-btn");
+// UI Elements
+const loginForm = document.getElementById("loginForm");
+const chatSection = document.getElementById("chatSection");
+const emailInput = document.getElementById("emailInput");
+const passwordInput = document.getElementById("passwordInput");
+const loginBtn = document.getElementById("loginBtn");
+const signupBtn = document.getElementById("signupBtn");
+const loginError = document.getElementById("loginError");
 
-    // Sign Up
-    signupBtn.addEventListener("click", async () => {
-      loginError.textContent = "";
-      const email = emailInput.value.trim();
-      const password = passwordInput.value.trim();
-      if (!email || !password) {
-        loginError.textContent = "Please enter email and password.";
-        return;
-      }
-      try {
-        await createUserWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        loginError.textContent = error.message;
-      }
+const messagesDiv = document.getElementById("messages");
+const messageInput = document.getElementById("messageInput");
+const sendBtn = document.getElementById("sendBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+
+// Escape HTML helper (for safe message display)
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Show/hide sections based on auth
+onAuthStateChanged(auth, user => {
+  if (user) {
+    loginForm.style.display = "none";
+    chatSection.style.display = "flex";
+    loginError.textContent = "";
+    loadMessages();
+  } else {
+    loginForm.style.display = "block";
+    chatSection.style.display = "none";
+    messagesDiv.innerHTML = "";
+  }
+});
+
+// Sign up
+signupBtn.addEventListener("click", () => {
+  const email = emailInput.value.trim();
+  const pass = passwordInput.value.trim();
+  loginError.textContent = "";
+  if (!email || !pass) {
+    loginError.textContent = "Please enter email and password.";
+    return;
+  }
+  createUserWithEmailAndPassword(auth, email, pass)
+    .catch(err => {
+      loginError.textContent = err.message;
     });
+});
 
-    // Login
-    loginBtn.addEventListener("click", async () => {
-      loginError.textContent = "";
-      const email = emailInput.value.trim();
-      const password = passwordInput.value.trim();
-      if (!email || !password) {
-        loginError.textContent = "Please enter email and password.";
-        return;
-      }
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        loginError.textContent = error.message;
-      }
+// Login
+loginBtn.addEventListener("click", () => {
+  const email = emailInput.value.trim();
+  const pass = passwordInput.value.trim();
+  loginError.textContent = "";
+  if (!email || !pass) {
+    loginError.textContent = "Please enter email and password.";
+    return;
+  }
+  signInWithEmailAndPassword(auth, email, pass)
+    .catch(err => {
+      loginError.textContent = err.message;
     });
+});
 
-    // Logout
-    logoutBtn.addEventListener("click", () => {
-      signOut(auth);
-    });
+// Logout
+logoutBtn.addEventListener("click", () => {
+  signOut(auth);
+});
 
-    // Listen to auth state
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        loginForm.style.display = "none";
-        chatSection.style.display = "flex";
-        loadMessages();
-      } else {
-        loginForm.style.display = "flex";
-        chatSection.style.display = "none";
-        messagesDiv.innerHTML = "";
-      }
-    });
+// Send message
+sendBtn.addEventListener("click", () => {
+  sendMessage();
+});
+messageInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
 
-    // Send message
-    messageForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const msg = messageInput.value.trim();
-      if (msg === "") return;
-      const user = auth.currentUser;
-      if (!user) return;
-      const messagesRef = ref(db, "messages");
-      const newMsgRef = push(messagesRef);
-      set(newMsgRef, {
-        uid: user.uid,
-        email: user.email,
-        message: msg,
-        timestamp: Date.now()
+function sendMessage() {
+  const msg = messageInput.value.trim();
+  const user = auth.currentUser;
+  if (!msg || !user) return;
+  const messagesRef = ref(db, "messages");
+  push(messagesRef, {
+    email: user.email,
+    message: msg,
+    timestamp: serverTimestamp()
+  });
+  messageInput.value = "";
+}
+
+// Load and display messages
+function loadMessages() {
+  const messagesRef = ref(db, "messages");
+  // Listen only for last 100 messages (optional)
+  const recentMessagesQuery = query(messagesRef, orderByChild("timestamp"), limitToLast(100));
+
+  onValue(recentMessagesQuery, (snapshot) => {
+    const data = snapshot.val();
+    messagesDiv.innerHTML = "";
+    if (data) {
+      // Convert to array and sort by timestamp ascending
+      const msgs = Object.values(data).sort((a, b) => a.timestamp - b.timestamp);
+      msgs.forEach(msg => {
+        const div = document.createElement("div");
+        div.className = "message";
+        div.innerHTML = `<strong>${escapeHtml(msg.email)}:</strong> ${escapeHtml(msg.message)}`;
+        messagesDiv.appendChild(div);
       });
-      messageInput.value = "";
-    });
-
-    // Load and listen for messages
-    function loadMessages() {
-      const messagesRef = ref(db, "messages");
-      onValue(messagesRef, (snapshot) => {
-        const data = snapshot.val();
-        messagesDiv.innerHTML = "";
-        if (data) {
-          // Sort messages by timestamp
-          const msgs = Object.values(data).sort((a,b) => a.timestamp - b.timestamp);
-          msgs.forEach((msg) => {
-            const msgDiv = document.createElement("div");
-            msgDiv.className = "message";
-            msgDiv.innerHTML = `<strong>${escapeHtml(msg.email)}:</strong> ${escapeHtml(msg.message)}`;
-            messagesDiv.appendChild(msgDiv);
-          });
-          // Scroll to bottom
-          messagesDiv.scrollTop = messagesDiv.scrollHeight;
-        }
-      });
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
-
-    // Simple HTML escape to prevent XSS
-    function escapeHtml(text) {
-      return text.replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      })[m]);
-    }
-  </script>
+  });
+}
+</script>
 </body>
 </html>
